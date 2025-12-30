@@ -11,6 +11,7 @@ use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
 use yii\db\ActiveRecord;
+use yii\helpers\ArrayHelper;
 
 /**
  * This is the model class for table "book".
@@ -22,6 +23,7 @@ use yii\db\ActiveRecord;
  * @property string|null $isbn
  * @property string|null $cover_photo
  * @property int $created_by
+ * @property int $updated_by
  * @property int|null $updated_at
  * @property int|null $created_at
  *
@@ -32,7 +34,7 @@ class Book extends ActiveRecord
 {
     use SyncTrait;
 
-    private array $authorIds = [];
+    public array $authorIds = [];
 
     public static function tableName(): string
     {
@@ -59,11 +61,13 @@ class Book extends ActiveRecord
         return [
             [['description', 'isbn'], 'default', 'value' => null],
             [['title', 'year'], 'required'],
+            [['authorIds'], 'required', 'message' => 'Authors cannot be blank.'],
             [['year'], 'integer'],
             [['description'], 'string'],
             [['title', 'isbn'], 'string', 'max' => 255],
             [['year'], 'integer', 'min' => 1000],
             [['cover_photo'], 'file', 'skipOnEmpty' => true, 'extensions' => 'png, jpg'],
+            [['authorIds'], 'each', 'rule' => ['exist', 'targetClass' => Author::class, 'targetAttribute' => 'id']],
         ];
     }
 
@@ -87,7 +91,7 @@ class Book extends ActiveRecord
         parent::afterSave($insert, $changedAttributes);
 
         if (!empty($this->authorIds)) {
-            $this->syncAuthors($this->authorIds);
+            $this->sync('authors', $this->authorIds);
 
             if ($insert) {
                 $this->notifySubscribers();
@@ -106,46 +110,24 @@ class Book extends ActiveRecord
         return true;
     }
 
+    public function afterFind(): void
+    {
+        parent::afterFind();
+
+        if ($this->isRelationPopulated('authors')) {
+            $this->authorIds = ArrayHelper::getColumn($this->authors, 'id');
+        }
+    }
+
     public function getAuthors(): ActiveQuery
     {
         return $this->hasMany(Author::class, ['id' => 'author_id'])
             ->viaTable('book_author', ['book_id' => 'id']);
     }
 
-    public function getCreator(): ActiveQuery
-    {
-        return $this->hasOne(User::class, ['id' => 'created_by']);
-    }
-
-    public function syncAuthors(array $authorIds): void
-    {
-        $this->sync('authors', $authorIds);
-    }
-
     public function getCoverPhotoUrl(): string
     {
         return Yii::getAlias('@web/' . $this->cover_photo);
-    }
-
-    public function saveBook(array $authorIds = []): bool
-    {
-        $transaction = Yii::$app->db->beginTransaction();
-
-        try {
-            $this->authorIds = $authorIds;
-
-            if (!$this->save()) {
-                $transaction->rollBack();
-                return false;
-            }
-
-            $transaction->commit();
-            return true;
-        } catch (Throwable $e) {
-            $transaction->rollBack();
-
-            return false;
-        }
     }
 
     private function notifySubscribers(): void

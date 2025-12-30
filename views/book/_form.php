@@ -7,7 +7,6 @@ use yii\widgets\ActiveForm;
 /** @var app\models\Book $model */
 /** @var yii\widgets\ActiveForm $form */
 /** @var array $authorList */
-/** @var array $selectedAuthors */
 ?>
 
 <div class="book-form">
@@ -24,25 +23,18 @@ use yii\widgets\ActiveForm;
 
     <?= $form->field($model, 'isbn')->textInput(['maxlength' => true]) ?>
 
-    <div class="form-group">
-        <label class="control-label">Authors</label>
-        <?= Html::dropDownList(
-                'authorIds',
-                $selectedAuthors,
-                $authorList,
-                [
-                        'class' => 'form-control',
-                        'multiple' => 'multiple',
-                        'size' => 5
-                ]
-        ) ?>
-        <div class="help-block">
-            <?= Html::a('Create new author', ['author/create'], [
-                    'target' => '_blank',
-                    'class' => 'btn btn-xs btn-link',
-            ]) ?>
-        </div>
-    </div>
+    <?= $form->field($model, 'authorIds')
+            ->label('Authors')
+            ->dropDownList(
+                    $authorList,
+                    ['multiple' => 'multiple']
+            )->hint(
+                    Html::a('Create new author', ['author/create'], [
+                            'target' => '_blank',
+                            'class' => 'btn btn-xs btn-link',
+                    ])
+            ) ?>
+
 
     <div class="form-group">
         <label class="control-label">Cover photo</label>

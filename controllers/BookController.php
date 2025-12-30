@@ -66,18 +66,16 @@ class BookController extends Controller
     {
         $model = new Book();
 
-        if ($this->request->isPost && $model->load($this->request->post())) {
-            $authorIds = $this->request->post('authorIds', []);
-
-            if ($model->saveBook($authorIds)) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
+        if ($this->request->isPost
+            && $model->load($this->request->post())
+            && $model->save()
+        ) {
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('create', [
             'model' => $model,
             'authorList' => $this->getAuthorList(),
-            'selectedAuthors' => [],
         ]);
     }
 
@@ -85,18 +83,16 @@ class BookController extends Controller
     {
         $model = $this->findModel($id);
 
-        if ($this->request->isPost && $model->load($this->request->post())) {
-            $authorIds = $this->request->post('authorIds', []);
-
-            if ($model->saveBook($authorIds)) {
-                return $this->redirect(['view', 'id' => $model->id]);
-            }
+        if ($this->request->isPost
+            && $model->load($this->request->post())
+            && $model->save()
+        ) {
+            return $this->redirect(['view', 'id' => $model->id]);
         }
 
         return $this->render('update', [
             'model' => $model,
             'authorList' => $this->getAuthorList(),
-            'selectedAuthors' => $this->getSelectedAuthorIds($model),
         ]);
     }
 
@@ -113,11 +109,6 @@ class BookController extends Controller
             ->select(['full_name', 'id'])
             ->indexBy('id')
             ->column();
-    }
-
-    protected function getSelectedAuthorIds(Book $model): array
-    {
-        return ArrayHelper::getColumn($model->authors, 'id');
     }
 
     protected function findModel(int $id): Book
