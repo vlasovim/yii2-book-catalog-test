@@ -8,16 +8,25 @@ trait SyncTrait
     {
         $relation = $this->getRelation($relationName);
 
-        $this->unlinkAll($relationName, true);
+        $currentIds = $relation->select('id')->column();
 
-        if (empty($ids)) {
-            return;
+        $toUnlink = array_diff($currentIds, $ids);
+        $toLink = array_diff($ids, $currentIds);
+
+        if (!empty($toUnlink)) {
+            $models = $relation->modelClass::findAll(['id' => $toUnlink]);
+
+            foreach ($models as $model) {
+                $this->unlink($relationName, $model, true);
+            }
         }
 
-        $models = $relation->modelClass::findAll(['id' => $ids]);
+        if (!empty($toLink)) {
+            $models = $relation->modelClass::findAll(['id' => $toLink]);
 
-        foreach ($models as $model) {
-            $this->link($relationName, $model);
+            foreach ($models as $model) {
+                $this->link($relationName, $model);
+            }
         }
     }
 }
