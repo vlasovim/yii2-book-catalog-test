@@ -3,13 +3,11 @@
 namespace app\controllers;
 
 use app\models\Author;
-use app\models\Book;
 use app\models\Subscription;
 use Yii;
 use yii\data\ActiveDataProvider;
 use yii\filters\AccessControl;
 use yii\web\Controller;
-use yii\filters\VerbFilter;
 use yii\web\NotFoundHttpException;
 use yii\web\Response;
 
@@ -25,7 +23,7 @@ class AuthorController extends Controller
                     'rules' => [
                         [
                             'allow' => true,
-                            'actions' => ['index', 'view'],
+                            'actions' => ['index', 'view', 'subscribe'],
                             'roles' => ['?', '@'],
                         ],
                         [
@@ -41,10 +39,10 @@ class AuthorController extends Controller
 
     public function actionIndex(?int $year = null): string
     {
-        $year = $year ?: date('Y');
+        $year = $year ?: (int)date('Y');
 
         $dataProvider = new ActiveDataProvider([
-            'query' => Author::topByYear($year),
+            'query' => Author::find()->topByYear($year),
             'pagination' => false,
         ]);
 
@@ -76,6 +74,17 @@ class AuthorController extends Controller
         $model = $this->findModel($id);
         $subscriptionModel = new Subscription();
 
+        return $this->render('view', [
+            'model' => $model,
+            'subscriptionModel' => $subscriptionModel,
+        ]);
+    }
+
+    public function actionSubscribe(int $id): Response
+    {
+        $model = $this->findModel($id);
+        $subscriptionModel = new Subscription();
+
         if ($subscriptionModel->load(Yii::$app->request->post())) {
             $subscriptionModel->author_id = $model->id;
 
@@ -90,14 +99,9 @@ class AuthorController extends Controller
                     'Subscription error. You may already be subscribed with this phone number.'
                 );
             }
-
-            return $this->refresh();
         }
 
-        return $this->render('view', [
-            'model' => $model,
-            'subscriptionModel' => $subscriptionModel,
-        ]);
+        return $this->redirect(['view', 'id' => $model->id]);
     }
 
     protected function findModel(int $id): Author

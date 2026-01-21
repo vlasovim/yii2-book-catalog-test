@@ -38,7 +38,8 @@ class Subscription extends ActiveRecord
         return [
             [['author_id', 'subscriber_phone'], 'required'],
             [['author_id'], 'integer'],
-            [['subscriber_phone'], 'string', 'max' => 255],
+            [['subscriber_phone'], 'string', 'max' => 20],
+            [['subscriber_phone'], 'match', 'pattern' => '/^\+?[0-9]{10,15}$/'],
             [['author_id', 'subscriber_phone'], 'unique', 'targetAttribute' => ['author_id', 'subscriber_phone']],
             [['author_id'], 'exist', 'skipOnError' => true, 'targetClass' => Author::class, 'targetAttribute' => ['author_id' => 'id']],
         ];

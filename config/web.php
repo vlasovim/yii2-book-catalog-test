@@ -24,7 +24,7 @@ $config = [
             'class' => 'yii\caching\FileCache',
         ],
         'user' => [
-            'identityClass' => 'app\models\User',
+            'identityClass' => 'app\models\UserAuth',
             'enableAutoLogin' => true,
         ],
         'errorHandler' => [
@@ -51,14 +51,12 @@ $config = [
             'as log' => \yii\queue\LogBehavior::class,
             'path' => '@runtime/queue',
         ],
-        /*
         'urlManager' => [
             'enablePrettyUrl' => true,
             'showScriptName' => false,
             'rules' => [
             ],
         ],
-        */
     ],
     'params' => $params,
 ];

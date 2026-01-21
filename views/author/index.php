@@ -1,9 +1,6 @@
 <?php
 
-use app\models\Book;
 use yii\helpers\Html;
-use yii\helpers\Url;
-use yii\grid\ActionColumn;
 use yii\grid\GridView;
 
 /** @var yii\web\View $this */
@@ -15,7 +12,7 @@ $this->params['breadcrumbs'][] = $this->title;
 ?>
 <div class="book-index">
 
-    <h1>Top authors in <?= $year ?></h1>
+    <h1>Top authors in <?= Html::encode($year) ?></h1>
 
     <div class="row mb-3">
         <div class="col-md-4">
@@ -41,7 +38,7 @@ $this->params['breadcrumbs'][] = $this->title;
                     ['class' => 'yii\grid\SerialColumn'],
                     'full_name',
                     [
-                            'attribute' => 'books_count',
+                            'attribute' => 'booksCount',
                             'label' => 'Books in ' . $year,
                             'format' => 'raw',
                     ],

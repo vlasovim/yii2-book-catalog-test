@@ -2,6 +2,7 @@
 
 namespace app\models;
 
+use app\models\query\AuthorQuery;
 use yii\behaviors\BlameableBehavior;
 use yii\behaviors\TimestampBehavior;
 use yii\db\ActiveQuery;
@@ -22,7 +23,7 @@ use yii\db\ActiveRecord;
  */
 class Author extends ActiveRecord
 {
-    public int $books_count;
+    public ?int $booksCount = null;
 
     public static function tableName(): string
     {
@@ -59,6 +60,11 @@ class Author extends ActiveRecord
         ];
     }
 
+    public static function find(): AuthorQuery
+    {
+        return new AuthorQuery(get_called_class());
+    }
+
     public function getBooks(): ActiveQuery
     {
         return $this->hasMany(Book::class, ['id' => 'book_id'])
@@ -68,20 +74,5 @@ class Author extends ActiveRecord
     public function getSubscriptions(): ActiveQuery
     {
         return $this->hasMany(Subscription::class, ['author_id' => 'id']);
-    }
-
-    public static function topByYear($year, $limit = 10): ActiveQuery
-    {
-        return self::find()
-            ->addSelect(['author.*'])
-            ->addSelect(['books_count' => 'COUNT(DISTINCT book.id)'])
-            ->innerJoinWith([
-                'books' => function ($query) use ($year) {
-                    $query->andWhere(['book.year' => $year]);
-                }
-            ])
-            ->groupBy('author.id')
-            ->orderBy(['books_count' => SORT_DESC])
-            ->limit($limit);
     }
 }

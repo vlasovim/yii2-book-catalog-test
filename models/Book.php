@@ -125,9 +125,12 @@ class Book extends ActiveRecord
             ->viaTable('book_author', ['book_id' => 'id']);
     }
 
-    public function getCoverPhotoUrl(): string
+    public function getCoverPhotoUrl(): ?string
     {
-        return Yii::getAlias('@web/' . $this->cover_photo);
+        if ($this->cover_photo) {
+            return Yii::getAlias('@web/' . $this->cover_photo);
+        }
+        return null;
     }
 
     private function notifySubscribers(): void
